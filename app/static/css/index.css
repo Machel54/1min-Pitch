@@ -34,3 +34,9 @@
     font-size: 1.2em;
     line-height: 1.6em;
 }
+.navbar{
+    min-height: 8vh;
+    z-index: 1;
+    background-color: black;
+}
+
