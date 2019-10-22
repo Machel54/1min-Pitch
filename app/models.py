@@ -1,14 +1,20 @@
 from . import db
+from flask_login import UserMixin
 from werkzeug.security import generate_password_hash,check_password_hash
+from . import login_manager
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
-class User(db.Model):
+class User(UserMixin,db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer,primary_key = True)
-    username = db.Column(db.String(255))
+    username = db.Column(db.String(255),index = True)
+    email = db.Column(db.String(255),unique = True,index = True)
     role_id = db.Column(db.Integer,db.ForeignKey('roles.id'))
-    pass_secure = db.Column(db.String(255))
+    password_hash = db.Column(db.String(255))
 
     @property
     def password(self):
@@ -34,3 +40,38 @@ class Role(db.Model):
 
     def __repr__(self):
         return f'User {self.name}'
+
+class Pitch(db.Model):
+    '''
+    Pitch class to define Pitch Objects
+    '''
+    __tablename__ = 'pitch'
+
+    id = db.Column(db.Integer,primary_key = True)
+    pitch = db.Column(db.String)
+    categories_id = db.Column(db.Integer)
+    username =  db.Column(db.String)
+    user_id = db.Column(db.Integer,db.ForeignKey("users.id"))
+    # comments = db.relationship('Comment',backref = 'pitch',lazy="dynamic")
+        
+
+    def save_pitch(self):
+        '''
+        Function that saves pitches
+        '''
+        db.session.add(self)
+        db.session.commit()
+    @classmethod
+    def get_all_pitches(cls):
+        '''
+        Function that queries the database and returns all the pitches
+        '''
+        return Pitch.query.all()
+
+    @classmethod
+    def get_pitches_by_categories(cls,cat_id):
+        '''
+        Function that queries the database and returns pitches based on the
+        category passed to it
+        '''
+        return Pitch.query.filter_by(categories_id= cat_id)
