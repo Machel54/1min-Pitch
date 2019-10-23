@@ -2,7 +2,7 @@ from flask import render_template,redirect,url_for,request
 from flask_login import login_required, current_user
 from . import main
 from ..models import Pitch,User,Comment
-from .forms import PitchForm
+from .forms import PitchForm,CommentsForm
 
 # Views
 @main.route('/')
@@ -103,3 +103,4 @@ def new_comment(id):
         return redirect(url_for('main.index'))
     #title = f'{pitch_result.id} review'
     return render_template('new_comment.html',comment_form=form, vote_form= vote_form)
+
