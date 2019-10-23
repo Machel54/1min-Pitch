@@ -1,7 +1,8 @@
 from flask import render_template,redirect,url_for
-from flask_login import login_required
+from flask_login import login_required,current_user
 from . import main
-from ..models import Pitch
+from ..models import Pitch,User,Comment
+from .forms import PitchForm
 
 # Views
 @main.route('/')
@@ -56,6 +57,36 @@ def pitch(pitch_id):
 
     return render_template('pitch.html',title= title ,found_pitch= found_pitch, pitch_comments= pitch_comments)
 
+@main.route('/pitch/new/', methods = ['GET','POST'])
+@login_required
+def new_pitch():
+    '''
+    Function that creates new pitches
+    '''
+    form = PitchForm()
 
+    if category is None:
+        abort( 404 )
 
+    if form.validate_on_submit():
+        pitch= form.content.data
+        category_id = form.category_id.data
+        new_pitch= Pitch(pitch= pitch, category_id= category_id,username=current_user.username)
 
+        new_pitch.save_pitch()
+        return redirect(url_for('main.index'))
+
+    return render_template('new_pitch.html', new_pitch_form= form)
+
+@main.route('/category/<int:id>')
+def category(id):
+    '''
+    function that returns pitches based on the entered category id
+    '''
+    category = PitchCategory.query.get(id)
+
+    if category is None:
+        abort(404)
+
+    pitches_in_category = Pitches.get_pitch(id)
+    return render_template('category.html' ,category= category, pitches= pitches_in_category)

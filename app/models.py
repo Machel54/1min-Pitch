@@ -14,7 +14,8 @@ class User(UserMixin,db.Model):
     username = db.Column(db.String(255),index = True)
     email = db.Column(db.String(255),unique = True,index = True)
     role_id = db.Column(db.Integer,db.ForeignKey('roles.id'))
-    password_hash = db.Column(db.String(255))
+    pass_secure = db.Column(db.String(255))
+    pitch = db.relationship('Pitch',backref = 'users',lazy="dynamic")
 
     @property
     def password(self):
@@ -52,7 +53,7 @@ class Pitch(db.Model):
     categories_id = db.Column(db.Integer)
     username =  db.Column(db.String)
     user_id = db.Column(db.Integer,db.ForeignKey("users.id"))
-    # comments = db.relationship('Comment',backref = 'pitch',lazy="dynamic")
+    comments = db.relationship('Comment',backref = 'pitch',lazy="dynamic")
         
 
     def save_pitch(self):
@@ -75,3 +76,51 @@ class Pitch(db.Model):
         category passed to it
         '''
         return Pitch.query.filter_by(categories_id= cat_id)
+
+class PitchCategory(db.Model):
+    '''
+    Function that defines different categories of pitches
+    '''
+    __tablename__ ='pitch_categories'
+
+
+    id = db.Column(db.Integer, primary_key=True)
+    name_of_category = db.Column(db.String(255))
+    category_description = db.Column(db.String(255))
+
+    @classmethod
+    def get_categories(cls):
+        '''
+        This function fetches all the categories from the database
+        '''
+        categories = PitchCategory.query.all()
+        return categories
+
+class Comment(db.Model):
+
+    __tablename__ = 'comments'
+
+    id = db.Column(db.Integer,primary_key = True)
+    comment= db.Column(db.String)
+    pitch_id = db.Column(db.Integer,db.ForeignKey('pitch.id'))
+    username =  db.Column(db.String)
+    votes= db.Column(db.Integer)
+    
+
+    def save_comment(self):
+        '''
+        Function that saves comments
+        '''
+        db.session.add(self)
+        db.session.commit()
+
+    @classmethod
+    def clear_comments(cls):
+        Comment.all_comments.clear()
+
+    @classmethod
+    def get_comments(cls,id):
+        comments = Comment.query.filter_by(pitch_id=id).all()
+
+        return comments
+
