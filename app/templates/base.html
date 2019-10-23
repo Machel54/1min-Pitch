@@ -15,8 +15,8 @@
        <title> Welcome Pitch it </title>
        {% endif %}
        {% with messages = get_flashed_messages(with_categories=true) %}
-           {% if massages %}
-               {% for category, message in massages %}
+           {% if messages %}
+               {% for category, message in messages %}
                    <div class="alert alert-{{ category }}">
                        {{ message }}
                    </div>

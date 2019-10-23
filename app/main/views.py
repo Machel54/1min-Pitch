@@ -1,5 +1,5 @@
-from flask import render_template,redirect,url_for
-from flask_login import login_required,current_user
+from flask import render_template,redirect,url_for,request
+from flask_login import login_required, current_user
 from . import main
 from ..models import Pitch,User,Comment
 from .forms import PitchForm
@@ -11,6 +11,7 @@ def index():
     '''
     View root page function that returns the index page and its data
     '''
+    search_pitch = request.args.get('pitch_query')
     title = 'Home - Welcome, Pitch your ideas online'
 
     
@@ -70,8 +71,8 @@ def new_pitch():
 
     if form.validate_on_submit():
         pitch= form.content.data
-        category_id = form.category_id.data
-        new_pitch= Pitch(pitch= pitch, category_id= category_id,username=current_user.username)
+        categories_id = form.categories_id.data
+        new_pitch= Pitch(pitch= pitch, categories_id= categories_id,username=current_user.username)
 
         new_pitch.save_pitch()
         return redirect(url_for('main.index'))
@@ -90,3 +91,15 @@ def category(id):
 
     pitches_in_category = Pitches.get_pitch(id)
     return render_template('category.html' ,category= category, pitches= pitches_in_category)
+
+@main.route('/pitch/comments/new/<int:id>',methods = ['GET','POST'])
+@login_required
+def new_comment(id):
+    form = CommentsForm()
+    vote_form = UpvoteForm()
+    if form.validate_on_submit():
+        new_comment = Comment(pitch_id =id,comment=form.comment.data,username=current_user.username,votes=form.vote.data)
+        new_comment.save_comment()
+        return redirect(url_for('main.index'))
+    #title = f'{pitch_result.id} review'
+    return render_template('new_comment.html',comment_form=form, vote_form= vote_form)
